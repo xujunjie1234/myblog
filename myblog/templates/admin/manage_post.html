@@ -1,0 +1,77 @@
+{%  extends 'base.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}管理评论{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>文章
+        <small class="text-muted">{{ pagination.total }}篇</small>
+        <span class="float-right"><a class="btn btn-primary" href="{{ url_for('.new_post') }}">新建文章</a></span>
+    </h3>
+</div>
+{% if posts %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>NO.</th>
+            <th>标题</th>
+            <th>分类</th>
+            <th>日期</th>
+            <th>评论数</th>
+            <th>字数</th>
+            <th>管理</th>
+        </tr>
+    </thead>
+    {% for post in posts %}
+    <tbody>
+        <tr>
+            <td>{{ loop.index + ((page - 1) * config.MYBLOG_MANAGE_POST_PER_PAGE) }}</td>
+            <td><a href="{{ url_for('blog.show_post',post_id=post.id) }}">{{ post.title }}</a></td>
+            <td><a href="{{ url_for('blog.show_category',category_id=post.category.id) }}">{{ post.category.name }}</a></td>
+            <td>{{ moment(post.timestamp).format('L') }}</td>
+            <td><a href="{{ url_for('blog.show_post', post_id=post.id) }}#comments">{{ post.comments|length }}</a></td>
+            <td>{{ post.body|striptags|length }}</td>
+            <td>
+                <form class="inline" method="post" 
+                    action="{{ url_for('.set_comment',post_id=post.id,next=request.full_path) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-warning btn-sm">
+                        {% if post.can_comment %}禁言{% else %}取消禁言{% endif %}
+                    </button>
+                </form>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('.edit_post',post_id=post.id) }}">编辑</a>
+                
+                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#myModal">删除</button>
+                <div class="modal fade" id="myModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">删除文章</h4>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">确认删除?</div>
+                            <div class="modal-footer">
+                                <form class="inline" method="POST" action="{{ url_for('.delete_post',post_id=post.id,next=request.full_path) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                        <button type="submit" class="btn btn-danger btn-confirm" >删除</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </td>
+        </tr>
+    </tbody>
+    {% endfor %}
+</table>
+
+<div class="page-footer">
+    {{ render_pagination(pagination) }}
+</div>
+{% else %}
+<div class="tip"><h5>no POST</h5></div>
+{% endif %}
+{% endblock %}
