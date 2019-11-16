@@ -42,7 +42,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime,default=datetime.utcnow,index=True)
     can_comment = db.Column(db.Boolean,default=True)
     read = db.Column(db.Integer)
-    likes = db.Column(db.Integer)
+    #likes = db.Column(db.Integer)
 
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
     category = db.relationship('Category',back_populates='posts')
